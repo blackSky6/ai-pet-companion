@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawPal - AI Pet Companion</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #fff7f2 0%, #ffe8f3 50%, #f4efff 100%);
+      color: #2b2b2b;
+      min-height: 100vh;
+    }
+    .phone {
+      width: 390px;
+      max-width: 100%;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0,0,0,0.08);
+    }
+    .screen { display: none; padding: 20px 18px 28px; min-height: 100vh; }
+    .screen.active { display: block; }
+    .tag {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #fff;
+      color: #ff6b9d;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(255,107,157,0.12);
+    }
+    h1 {
+      margin-top: 18px;
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+    .sub {
+      margin-top: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #6b6b78;
+    }
+    .hero-card {
+      margin-top: 24px;
+      background: linear-gradient(135deg, #fff 0%, #fff7fb 100%);
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: 0 20px 40px rgba(255,107,157,0.12);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .pet-hero {
+      font-size: 86px;
+      animation: float 2.8s ease-in-out infinite;
+      display: inline-block;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .bubble {
+      position: absolute;
+      background: white;
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #666;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+    .bubble.one { top: 18px; left: 16px; }
+    .bubble.two { right: 16px; bottom: 18px; }
+    .cta {
+      display: block;
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-top: 22px;
+      background: linear-gradient(135deg, #ff6b9d 0%, #ff8f6b 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      box-shadow: 0 14px 30px rgba(255,107,157,0.28);
+    }
+    .features {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .feature {
+      background: rgba(255,255,255,0.8);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    .feature b { display: block; margin-bottom: 6px; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .back {
+      width: 38px; height: 38px; border-radius: 50%; border: none; background: white;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06); font-size: 18px;
+    }
+    .step { font-size: 13px; color: #8a8a96; }
+    .section-title { font-size: 26px; font-weight: 800; margin: 10px 0 14px; }
+    .pet-grid, .color-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .pet-option, .color-option {
+      background: rgba(255,255,255,0.82);
+      border: 2px solid transparent;
+      border-radius: 22px;
+      padding: 16px 10px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      cursor: pointer;
+    }
+    .pet-option.selected, .color-option.selected { border-color: #ff6b9d; }
+    .pet-option .emoji { font-size: 40px; margin-bottom: 8px; display: block; }
+    .input-card {
+      background: rgba(255,255,255,0.85);
+      border-radius: 22px;
+      padding: 16px;
+      margin-top: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+    input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: #fff7fb;
+      border-radius: 16px;
+      padding: 15px 14px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .tiny { font-size: 12px; color: #8a8a96; margin-top: 8px; }
+    .chat-shell {
+      background: linear-gradient(180deg, #fff 0%, #fff9fd 100%);
+      border-radius: 28px;
+      padding: 16px;
+      box-shadow: 0 18px 34px rgba(0,0,0,0.08);
+    }
+    .pet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .pet-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ffe4ef, #fff4cf);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    .pet-stage {
+      background: linear-gradient(180deg, #fff6fb 0%, #fff 100%);
+      border-radius: 24px;
+      height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .big-pet {
+      font-size: 90px;
+      animation: bounce 2.5s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.03); }
+    }
+    .status {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .pill {
+      background: white;
+      color: #666;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+    }
+    .messages {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 180px;
+    }
+    .msg {
+      max-width: 82%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    .msg.pet { background: #fff1f7; color: #5c4960; border-bottom-left-radius: 6px; }
+    .msg.user { background: #ff6b9d; color: white; margin-left: auto; border-bottom-right-radius: 6px; }
+    .composer {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .composer input {
+      margin-top: 0;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+    }
+    .send {
+      width: 52px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ff6b9d 0%, #ff8f6b 100%);
+      color: white;
+      font-size: 18px;
+    }
+    .footer-note {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 12px;
+      color: #8a8a96;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <section class="screen active" id="screen-home">
+      <span class="tag">🐾 AI Pet Companion</span>
+      <h1>Your AI pet already misses you.</h1>
+      <p class="sub">Adopt a tiny companion with real personality and memory. It remembers your mood, your name, and that weird little thing you said yesterday.</p>
+
+      <div class="hero-card">
+        <div class="bubble one">I saved your seat... meow 💗</div>
+        <div class="pet-hero">🐱</div>
+        <div class="bubble two">You had coffee again, right?</div>
+      </div>
+
+      <button class="cta" onclick="go('adopt')">Adopt for Free</button>
+
+      <div class="features">
+        <div class="feature">
+          <b>🧠 Real Memory</b>
+          Your pet remembers your stories and brings them up naturally.
+        </div>
+        <div class="feature">
+          <b>💕 Unique Personality</b>
+          Lazy, clingy, brave, shy — every pet feels a little different.
+        </div>
+        <div class="feature">
+          <b>🌙 Always Here</b>
+          No walks, no litter box, just soft little companionship.
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-adopt">
+      <div class="topbar">
+        <button class="back" onclick="go('home')">←</button>
+        <div class="step">Step 1 of 3</div>
+      </div>
+      <div class="section-title">Choose your pet</div>
+      <div class="pet-grid">
+        <div class="pet-option selected" data-type="cat" data-emoji="🐱" onclick="selectPet(this)">
+          <span class="emoji">🐱</span>
+          Cat
+        </div>
+        <div class="pet-option" data-type="dog" data-emoji="🐶" onclick="selectPet(this)">
+          <span class="emoji">🐶</span>
+          Dog
+        </div>
+        <div class="pet-option" data-type="bunny" data-emoji="🐰" onclick="selectPet(this)">
+          <span class="emoji">🐰</span>
+          Bunny
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:22px; font-size:22px;">Pick a color vibe</div>
+      <div class="color-grid">
+        <div class="color-option selected" data-color="Cream" onclick="selectColor(this)">Cream</div>
+        <div class="color-option" data-color="Mocha" onclick="selectColor(this)">Mocha</div>
+        <div class="color-option" data-color="Snow" onclick="selectColor(this)">Snow</div>
+      </div>
+
+      <div class="input-card">
+        <b>Name your companion</b>
+        <input id="petName" placeholder="Mochi, Luna, Coco..." value="Mochi" />
+        <div class="tiny">Tip: cute names convert. Your users are suckers for Mochi-tier naming.</div>
+      </div>
+
+      <button class="cta" onclick="createPet()">Bring Them Home ✨</button>
+    </section>
+
+    <section class="screen" id="screen-chat">
+      <div class="topbar" style="margin-bottom:14px;">
+        <button class="back" onclick="go('adopt')">←</button>
+        <div class="step">MVP Preview</div>
+      </div>
+
+      <div class="chat-shell">
+        <div class="pet-header">
+          <div class="pet-profile">
+            <div class="avatar" id="avatarEmoji">🐱</div>
+            <div>
+              <div style="font-weight:800; font-size:18px;" id="petDisplayName">Mochi</div>
+              <div style="font-size:12px; color:#7d7d89;">Lv. 3 · Affectionate · Remembers you</div>
+            </div>
+          </div>
+          <div style="font-size:22px;">💗</div>
+        </div>
+
+        <div class="pet-stage">
+          <div class="big-pet" id="stageEmoji">🐱</div>
+          <div class="status">
+            <span class="pill">😊 Happy</span>
+            <span class="pill">🔥 Bond 3/10</span>
+            <span class="pill">⏰ Just now</span>
+          </div>
+        </div>
+
+        <div class="messages" id="messages">
+          <div class="msg pet" id="welcomeMsg">Hi... I’m Mochi. I saved this little corner for you. Did work feel heavy today? 🥺</div>
+          <div class="msg user">A bit, yeah. I had too many meetings.</div>
+          <div class="msg pet">Mmm... I remember you said meetings drain you. Come sit with me for a minute, okay? purr 🐾</div>
+        </div>
+
+        <div class="composer">
+          <input id="userInput" placeholder="Say something to your pet..." />
+          <button class="send" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+
+      <div class="footer-note">这是演示原型：重点看视觉、情绪感和聊天氛围。</div>
+    </section>
+  </div>
+
+  <script>
+    let state = {
+      pet: 'cat',
+      emoji: '🐱',
+      color: 'Cream',
+      name: 'Mochi'
+    };
+
+    function go(screen) {
+      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      document.getElementById('screen-' + screen).classList.add('active');
+    }
+
+    function selectPet(el) {
+      document.querySelectorAll('.pet-option').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+      state.pet = el.dataset.type;
+      state.emoji = el.dataset.emoji;
+    }
+
+    function selectColor(el) {
+      document.querySelectorAll('.color-option').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+      state.color = el.dataset.color;
+    }
+
+    function createPet() {
+      const name = document.getElementById('petName').value.trim() || 'Mochi';
+      state.name = name;
+      document.getElementById('petDisplayName').innerText = name;
+      document.getElementById('avatarEmoji').innerText = state.emoji;
+      document.getElementById('stageEmoji').innerText = state.emoji;
+      document.getElementById('welcomeMsg').innerText = `Hi... I'm ${name}. I’ve been waiting for you. You feel like someone I want to stay close to already ${state.pet === 'cat' ? 'meow' : state.pet === 'dog' ? 'woof' : 'hop'} 💗`;
+      go('chat');
+    }
+
+    function sendMsg() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const box = document.getElementById('messages');
+      const user = document.createElement('div');
+      user.className = 'msg user';
+      user.innerText = text;
+      box.appendChild(user);
+
+      input.value = '';
+
+      setTimeout(() => {
+        const pet = document.createElement('div');
+        pet.className = 'msg pet';
+        const replies = [
+          `${state.name} remembers that. You always say things in such a soft way... ${state.pet === 'cat' ? 'purr' : state.pet === 'dog' ? 'tail wag' : 'tiny hop'} ✨`,
+          `Mmm... if today was messy, stay here with me a little longer. I like hearing your voice. 💕`,
+          `You told me something like that before. I think I’m getting really good at knowing your heart already. 🥹`,
+          `Okay... then I’m officially on your side. That’s how this works now. 🐾`
+        ];
+        pet.innerText = replies[Math.floor(Math.random() * replies.length)];
+        box.appendChild(pet);
+        box.scrollTop = box.scrollHeight;
+      }, 500);
+
+      box.scrollTop = box.scrollHeight;
+    }
+  </script>
+</body>
+</html>
