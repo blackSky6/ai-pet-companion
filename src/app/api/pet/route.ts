@@ -72,7 +72,7 @@ export async function PATCH(req: NextRequest) {
 
     if (error) throw error
     return NextResponse.json({ pet: data })
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

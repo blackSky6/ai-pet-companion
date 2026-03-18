@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Pet } from '@/types'
-import { buildSystemPrompt, PET_SOUND } from '@/lib/pet-prompt'
+import { buildSystemPrompt } from '@/lib/pet-prompt'
 
 // 调用智谱 GLM-4-Flash API
 async function callGLM(messages: { role: string; content: string }[]) {
