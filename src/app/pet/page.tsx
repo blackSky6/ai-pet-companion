@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pet } from '@/types'
 import { PET_EMOJI, PET_SOUND, MOOD_EMOJI, calcMood, getGreeting } from '@/lib/pet-prompt'
+import { chatWithPet } from '@/lib/glm'
 
 interface Message {
   role: 'user' | 'pet'
@@ -68,34 +69,18 @@ export default function PetPage() {
     setIsTyping(true)
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMsg,
-          pet,
-          history: messages.slice(-10),
-        }),
-      })
-      const data = await res.json()
-      const reply = data.reply || `${PET_SOUND[pet.species]}...`
-
+      const reply = await chatWithPet(userMsg, pet, messages.slice(-10))
       setMessages(prev => [...prev, { role: 'pet', content: reply }])
 
-      // 更新记忆（如果有新信息）
-      if (data.newFacts?.length > 0 && pet) {
-        const updatedPet = {
-          ...pet,
-          memory_summary: {
-            ...pet.memory_summary,
-            key_facts: [...(pet.memory_summary?.key_facts || []), ...data.newFacts].slice(-10),
-          },
-          intimacy_level: Math.min(10, (pet.intimacy_level || 1) + (msgCount % 5 === 0 ? 1 : 0)),
-          last_interaction_at: new Date().toISOString(),
-        }
-        setPet(updatedPet)
-        localStorage.setItem('pawpal_pet_demo', JSON.stringify(updatedPet))
+      // 每5条消息增加一级亲密度，更新宠物状态
+      const newCount = msgCount
+      const updatedPet = {
+        ...pet,
+        intimacy_level: Math.min(10, (pet.intimacy_level || 1) + (newCount % 5 === 0 ? 1 : 0)),
+        last_interaction_at: new Date().toISOString(),
       }
+      setPet(updatedPet)
+      localStorage.setItem('pawpal_pet_demo', JSON.stringify(updatedPet))
     } catch {
       setMessages(prev => [...prev, { role: 'pet', content: `${PET_SOUND[pet.species]}... (something went wrong, try again?)` }])
     } finally {

@@ -12,11 +12,12 @@
     "@ai-sdk/openai": "^3.0.41",
     "@supabase/supabase-js": "^2.99.2",
     "ai": "^6.0.116",
-    "next": "14.2.35",
-    "react": "^18",
-    "react-dom": "^18"
+    "next": "^15.5.13",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
