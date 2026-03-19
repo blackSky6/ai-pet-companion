@@ -33,5 +33,5 @@ export async function chatWithPet(
 
   if (!res.ok) throw new Error(`Proxy error: ${res.status}`)
   const data = await res.json()
-  return data.choices?.[0]?.message?.content ?? '...'
+  return data.reply ?? '...'
 }

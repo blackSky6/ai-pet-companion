@@ -54,19 +54,9 @@ export async function onRequestPost(context) {
       }
     }
 
-    // 只返回前端需要的内容，屏蔽模型、id、usage 等敏感信息
-    const safeResponse = {
-      choices: data.choices?.map(choice => ({
-        message: {
-          role: choice.message?.role,
-          content: choice.message?.content,
-        },
-        finish_reason: choice.finish_reason,
-        index: choice.index,
-      })),
-    }
-
-    return new Response(JSON.stringify(safeResponse), {
+    // 只返回纯文本内容，完全屏蔽模型、id、usage 等一切信息
+    const reply = data.choices?.[0]?.message?.content ?? '...'
+    return new Response(JSON.stringify({ reply }), {
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (e) {
