@@ -1,8 +1,8 @@
 import { Pet } from '@/types'
 import { buildSystemPrompt } from '@/lib/pet-prompt'
 
-// AI 代理地址 — Key 安全存在 Cloudflare Worker 里
-const AI_PROXY_URL = 'https://pawpal-ai-proxy.blacksky58.workers.dev'
+// AI 代理地址 — Cloudflare Pages Function，同域请求无跨域问题
+const AI_PROXY_URL = '/api/chat'
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system'

@@ -16,8 +16,8 @@ export const PET_SOUND: Record<string, string> = {
 
 // 根据宠物信息生成 System Prompt
 export function buildSystemPrompt(pet: Pet): string {
-  const sound = PET_SOUND[pet.species]
-  const traits = pet.personality_traits
+  const sound = PET_SOUND[pet.species] || 'meow'
+  const traits = pet.personality_traits || { energy: 'lazy', attachment: 'clingy', courage: 'brave' }
 
   const personalityDesc = [
     traits.energy === 'active' ? 'playful and energetic' : 'lazy and sleepy',
@@ -25,9 +25,10 @@ export function buildSystemPrompt(pet: Pet): string {
     traits.courage === 'brave' ? 'bold and curious' : 'shy but sweet',
   ].join(', ')
 
-  const memories = pet.memory_summary
-  const memoryText = memories.key_facts.length > 0
-    ? `\nMemory about your human:\n${memories.key_facts.map(f => `- ${f}`).join('\n')}`
+  const memories = pet.memory_summary || { key_facts: [], recent_topics: [] }
+  const keyFacts = Array.isArray(memories.key_facts) ? memories.key_facts : []
+  const memoryText = keyFacts.length > 0
+    ? `\nMemory about your human:\n${keyFacts.map((f: string) => `- ${f}`).join('\n')}`
     : ''
 
   return `You are ${pet.name}, a ${personalityDesc} AI ${pet.species}.

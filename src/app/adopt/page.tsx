@@ -18,7 +18,8 @@ export default function AdoptPage() {
   const [selectedPet, setSelectedPet] = useState('cat')
   const [selectedColor, setSelectedColor] = useState('Cream')
   const [petName, setPetName] = useState('Mochi')
-  const [loading, setLoading] = useState(false)
+  const [loading] = useState(false)
+  // loading 状态预留，当前创建宠物为同步操作
 
   const selectedEmoji = PETS.find(p => p.type === selectedPet)?.emoji ?? '🐱'
 
@@ -27,65 +28,33 @@ export default function AdoptPage() {
     setPetName(name)
   }
 
-  const createPet = async () => {
+  const createPet = () => {
     if (!petName.trim()) return
-    setLoading(true)
-
-    try {
-      // 先用临时 guest user id（后续接入登录后替换）
-      let userId = localStorage.getItem('pawpal_user_id')
-      if (!userId) {
-        userId = 'guest_' + Math.random().toString(36).slice(2)
-        localStorage.setItem('pawpal_user_id', userId)
-      }
-
-      const res = await fetch('/api/pet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          name: petName.trim(),
-          species: selectedPet,
-          appearance: selectedColor,
-        }),
-      })
-
-      const data = await res.json()
-      if (data.pet?.id) {
-        localStorage.setItem('pawpal_pet_id', data.pet.id)
-        router.push('/pet')
-      } else {
-        // Supabase 未配置时，走 demo 模式
-        localStorage.setItem('pawpal_pet_demo', JSON.stringify({
-          id: 'demo',
-          name: petName.trim(),
-          species: selectedPet,
-          appearance: selectedColor,
-          personality_traits: { energy: 'lazy', attachment: 'clingy', courage: 'brave' },
-          intimacy_level: 1,
-          mood: 'happy',
-          memory_summary: { key_facts: [], recent_topics: [] },
-          last_interaction_at: new Date().toISOString(),
-        }))
-        router.push('/pet')
-      }
-    } catch {
-      // 离线 demo 模式
-      localStorage.setItem('pawpal_pet_demo', JSON.stringify({
-        id: 'demo',
-        name: petName.trim(),
-        species: selectedPet,
-        appearance: selectedColor,
-        personality_traits: { energy: 'lazy', attachment: 'clingy', courage: 'brave' },
-        intimacy_level: 1,
-        mood: 'happy',
-        memory_summary: { key_facts: [], recent_topics: [] },
-        last_interaction_at: new Date().toISOString(),
-      }))
-      router.push('/pet')
-    } finally {
-      setLoading(false)
+    // 随机生成宠物性格
+    const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
+    const personality_traits = {
+      energy: pick(['active', 'lazy'] as const),
+      attachment: pick(['clingy', 'independent'] as const),
+      courage: pick(['brave', 'shy'] as const),
     }
+
+    // 直接存 localStorage（MVP 阶段不依赖后端 API）
+    const pet = {
+      id: 'pet_' + Math.random().toString(36).slice(2),
+      user_id: 'guest_' + Math.random().toString(36).slice(2),
+      name: petName.trim(),
+      species: selectedPet,
+      appearance: selectedColor,
+      personality_traits,
+      intimacy_level: 1,
+      mood: 'happy',
+      memory_summary: { key_facts: [] as string[], recent_topics: [] as string[] },
+      created_at: new Date().toISOString(),
+      last_interaction_at: new Date().toISOString(),
+    }
+
+    localStorage.setItem('pawpal_pet_demo', JSON.stringify(pet))
+    router.push('/pet')
   }
 
   return (
